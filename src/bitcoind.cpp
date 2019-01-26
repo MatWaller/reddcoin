@@ -58,13 +58,40 @@ bool AppInit(int argc, char* argv[])
     boost::thread* detectShutdownThread = NULL;
 
     bool fRet = false;
+
+
+    // If Qt is used, parameters/reddcoin.conf are parsed in qt/reddcoin.cpp's main()
+    ParseParameters(argc, argv);
+
+     // Process help and version before taking care about datadir
+    if (mapArgs.count("-?") || mapArgs.count("-help") || mapArgs.count("-version"))
+    {
+        std::string strUsage = _("ReddCoin Core Daemon") + " " + _("version") + " " + FormatFullVersion() + "\n";
+
+         if (mapArgs.count("-version"))
+        {
+            strUsage += 
+                _("Usage:") + "\n" +
+                  "  reddcoind [options]                     " + _("Start Reddcoin Core Daemon") + "\n" +
+                _("Usage (deprecated, use reddcoin-cli):") + "\n" +
+                  "  reddcoind [options] <command> [params]  " + _("Send command to Reddcoin Core") + "\n" +
+                  "  reddcoind [options] help                " + _("List commands") + "\n" +
+                  "  reddcoind [options] help <command>      " + _("Get help for a command") + "\n";
+        }
+        else
+        {
+            strUsage += "\n" + _("Usage:") + "\n" +
+                  "  bitcoind [options]                     " + _("Start ReddCoin Core Daemon") + "\n";
+
+             strUsage += "\n" + HelpMessage(HMM_REDDCOIND);
+        }
+
+         fprintf(stdout, "%s", strUsage.c_str());
+        return false;
+    }
+
     try
     {
-        //
-        // Parameters
-        //
-        // If Qt is used, parameters/bitcoin.conf are parsed in qt/bitcoin.cpp's main()
-        ParseParameters(argc, argv);
         if (!boost::filesystem::is_directory(GetDataDir(false)))
         {
             fprintf(stderr, "Error: Specified data directory \"%s\" does not exist.\n", mapArgs["-datadir"].c_str());
@@ -80,24 +107,6 @@ bool AppInit(int argc, char* argv[])
         // Check for -testnet or -regtest parameter (TestNet() calls are only valid after this clause)
         if (!SelectParamsFromCommandLine()) {
             fprintf(stderr, "Error: Invalid combination of -regtest and -testnet.\n");
-            return false;
-        }
-
-        if (mapArgs.count("-?") || mapArgs.count("--help"))
-        {
-            // First part of help message is specific to bitcoind / RPC client
-            std::string strUsage = _("Reddcoin Core Daemon") + " " + _("version") + " " + FormatFullVersion() + "\n\n" +
-                _("Usage:") + "\n" +
-                  "  reddcoind [options]                     " + _("Start Reddcoin Core Daemon") + "\n" +
-                _("Usage (deprecated, use reddcoin-cli):") + "\n" +
-                  "  reddcoind [options] <command> [params]  " + _("Send command to Reddcoin Core") + "\n" +
-                  "  reddcoind [options] help                " + _("List commands") + "\n" +
-                  "  reddcoind [options] help <command>      " + _("Get help for a command") + "\n";
-
-            strUsage += "\n" + HelpMessage(HMM_BITCOIND);
-            strUsage += "\n" + HelpMessageCli(false);
-
-            fprintf(stdout, "%s", strUsage.c_str());
             return false;
         }
 

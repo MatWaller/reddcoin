@@ -22,6 +22,23 @@ static bool AppInitRPC(int argc, char* argv[])
     // Parameters
     //
     ParseParameters(argc, argv);
+    
+    if (argc<2 || mapArgs.count("-?") || mapArgs.count("-help") || mapArgs.count("-version")) {
+        std::string strUsage = _("ReddCoin Core RPC client version") + " " + FormatFullVersion() + "\n";
+        if (!mapArgs.count("-version")) {
+            strUsage += "\n" + _("Usage:") + "\n" +
+                  "  reddcoin-cli [options] <command> [params]  " + _("Send command to ReddCoin Core") + "\n" +
+                  "  reddcoin-cli [options] help                " + _("List commands") + "\n" +
+                  "  reddcoin-cli [options] help <command>      " + _("Get help for a command") + "\n";
+
+             strUsage += "\n" + HelpMessageCli(HMM_REDDCOIND);
+        }
+
+         fprintf(stdout, "%s", strUsage.c_str());
+        return false;
+    }
+
+
     if (!boost::filesystem::is_directory(GetDataDir(false)))
     {
         fprintf(stderr, "Error: Specified data directory \"%s\" does not exist.\n", mapArgs["-datadir"].c_str());
@@ -39,20 +56,6 @@ static bool AppInitRPC(int argc, char* argv[])
         return false;
     }
 
-    if (argc<2 || mapArgs.count("-?") || mapArgs.count("--help"))
-    {
-        // First part of help message is specific to RPC client
-        std::string strUsage = _("Reddcoin Core RPC client version") + " " + FormatFullVersion() + "\n\n" +
-            _("Usage:") + "\n" +
-              "  reddcoin-cli [options] <command> [params]  " + _("Send command to reddcoin Core") + "\n" +
-              "  reddcoin-cli [options] help                " + _("List commands") + "\n" +
-              "  reddcoin-cli [options] help <command>      " + _("Get help for a command") + "\n";
-
-        strUsage += "\n" + HelpMessageCli(true);
-
-        fprintf(stdout, "%s", strUsage.c_str());
-        return false;
-    }
     return true;
 }
 
